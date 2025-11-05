@@ -177,6 +177,46 @@ When setup completes successfully:
 
 ---
 
+## ⚠️ Known Issues
+
+### Google Cloud BOM Dependencies
+
+**Issue:** The Google Cloud BOM (Bill of Materials) artifact fails to download in both Claude Code web and OpenAI Codex sandboxes.
+
+**Error:**
+```
+UnresolvableModelException: Could not transfer artifact
+com.google.cloud:google-cloud-bom:pom:0.240.0 from/to central
+Caused by: java.net.UnknownHostException: repo1.maven.org:
+Temporary failure in name resolution
+```
+
+**Root cause:** Even with the proxy shim working correctly, something about the Google Cloud BOM resolution triggers a DNS lookup that bypasses the proxy configuration. This appears to be a Maven-specific issue with BOM artifact resolution.
+
+**Workaround:** Manually download the BOM POM file and place it in your Maven cache:
+
+```bash
+# For gapic-libraries-bom 1.54.2
+mkdir -p ~/.m2/repository/com/google/cloud/gapic-libraries-bom/1.54.2
+curl -o ~/.m2/repository/com/google/cloud/gapic-libraries-bom/1.54.2/gapic-libraries-bom-1.54.2.pom \
+  https://repo1.maven.org/maven2/com/google/cloud/gapic-libraries-bom/1.54.2/gapic-libraries-bom-1.54.2.pom
+
+# For google-cloud-bom 0.240.0
+mkdir -p ~/.m2/repository/com/google/cloud/google-cloud-bom/0.240.0
+curl -o ~/.m2/repository/com/google/cloud/google-cloud-bom/0.240.0/google-cloud-bom-0.240.0.pom \
+  https://repo1.maven.org/maven2/com/google/cloud/google-cloud-bom/0.240.0/google-cloud-bom-0.240.0.pom
+```
+
+**Why this works:** `curl` respects the `HTTP_PROXY` environment variable, so it successfully downloads through the Claude Code proxy. Once the BOM is cached locally, Maven doesn't need to resolve it again.
+
+**Automation:** Add these curl commands to your project's setup Makefile or initialization script for repeatable setup.
+
+**Help wanted!** If you've found a better solution or automated this, please share! Open an issue or PR with details.
+
+**Full error trace:** See the complete stack trace in [TROUBLESHOOTING.md](TROUBLESHOOTING.md#google-cloud-bom-issue).
+
+---
+
 ## 🤝 Contributing
 
 Found an issue? Have a better solution?
