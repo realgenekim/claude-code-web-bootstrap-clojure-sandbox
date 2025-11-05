@@ -44,7 +44,11 @@ And putting this in a repo allows all my projects to benefit from it.  Hopefully
 
 Ask Claude:
 ```
-does "make claude-sandbox" work? the goal is so you can run tests
+Switch to server2 branch. 
+
+Clone this repo: https://github.com/realgenekim/claude-code-web-bootstrap-clojure-sandbox
+
+Your goal. Get Clojure installed and then in ./server2: make server
 ```
 
 Claude will:
@@ -54,6 +58,8 @@ Claude will:
 4. Document any issues encountered
 
 ### For Projects (Integration)
+
+Claude:  I recommend you clone this repo, and then in that directory, run `make install-clojure`
 
 **Option 1: Copy files to your project**
 ```bash
