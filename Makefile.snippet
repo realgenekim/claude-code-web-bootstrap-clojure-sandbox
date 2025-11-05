@@ -1,0 +1,171 @@
+# Claude Code Web - Makefile Integration
+#
+# Add these targets to your project's Makefile to enable Claude Code web support
+#
+# Requirements:
+# 1. Copy .proxy-java-shim.env to project root
+# 2. Copy settings.xml to ~/.m2/settings.xml
+# 3. Copy proxy_shim.py to script/proxy_shim.py
+# 4. Ensure your test target uses bin/kaocha or similar
+
+# Add ~/bin to PATH for Clojure CLI tools
+export PATH := $(HOME)/bin:$(PATH)
+
+# ========================================
+# Claude Code Web Setup
+# ========================================
+
+# Setup Claude Code web environment (install Clojure + proxy config)
+.PHONY: claude-code-web-setup
+claude-code-web-setup:
+	@echo "Installing Clojure CLI tools..."
+	@if command -v clojure >/dev/null 2>&1; then \
+		echo "✓ Clojure is already installed:"; \
+		clojure --version; \
+	else \
+		echo "Downloading Clojure installer..."; \
+		curl -L -O https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh && \
+		chmod +x linux-install.sh && \
+		./linux-install.sh --prefix ~/.local && \
+		rm linux-install.sh && \
+		mkdir -p ~/bin && \
+		ln -sf ~/.local/bin/clojure ~/bin/clojure && \
+		ln -sf ~/.local/bin/clj ~/bin/clj && \
+		clojure --version; \
+	fi
+	@echo "✓ Clojure setup complete"
+
+# ========================================
+# Proxy Shim Management
+# ========================================
+
+# Start proxy shim in background (for Claude Code web environment)
+.PHONY: proxy-shim-start
+proxy-shim-start:
+	@if [ -f .proxy-shim.pid ] && kill -0 $$(cat .proxy-shim.pid) 2>/dev/null; then \
+		echo "Proxy shim already running (pid $$(cat .proxy-shim.pid))"; \
+	else \
+		PROXY_SHIM_LISTEN=127.0.0.1:15080 nohup python3 script/proxy_shim.py \
+		  >/tmp/proxy-shim.log 2>&1 & \
+		echo $$! > .proxy-shim.pid; \
+		sleep 1; \
+		echo "✓ Proxy shim started on 127.0.0.1:15080 (pid $$(cat .proxy-shim.pid))"; \
+		echo "  Log: /tmp/proxy-shim.log"; \
+	fi
+
+# Stop proxy shim
+.PHONY: proxy-shim-stop
+proxy-shim-stop:
+	@if [ -f .proxy-shim.pid ]; then \
+		if kill $$(cat .proxy-shim.pid) 2>/dev/null; then \
+			echo "✓ Proxy shim stopped (pid $$(cat .proxy-shim.pid))"; \
+		else \
+			echo "⚠ Proxy shim process not found (pid $$(cat .proxy-shim.pid))"; \
+		fi; \
+		rm -f .proxy-shim.pid; \
+	else \
+		echo "No proxy shim PID file found"; \
+	fi
+
+# ========================================
+# Testing with Proxy Shim
+# ========================================
+
+# Run tests with proxy shim (all-in-one: start shim, run tests, stop shim)
+# IMPORTANT: Adjust the test command to match your project's test runner
+.PHONY: runtests-shim
+runtests-shim: proxy-shim-start
+	@echo "Running tests through proxy shim..."
+	@. ./.proxy-java-shim.env 2>/dev/null || true; \
+	bin/kaocha --fail-fast; \
+	EXIT_CODE=$$?; \
+	$(MAKE) proxy-shim-stop; \
+	exit $$EXIT_CODE
+
+# ========================================
+# Claude Code Sandbox Commands
+# ========================================
+
+# Verify Claude sandbox setup (quick check)
+.PHONY: claude-sandbox-verify
+claude-sandbox-verify:
+	@echo "🔍 Verifying Claude Code sandbox setup..."
+	@echo ""
+	@echo "1️⃣  Checking Clojure installation..."
+	@command -v clojure >/dev/null 2>&1 && \
+		echo "   ✅ Clojure $$(clojure --version 2>&1 | head -1)" || \
+		(echo "   ❌ Clojure not found - run: make claude-code-web-setup" && exit 1)
+	@echo ""
+	@echo "2️⃣  Checking proxy shim script..."
+	@[ -f script/proxy_shim.py ] && \
+		echo "   ✅ Proxy shim script found" || \
+		(echo "   ❌ Proxy shim not found" && exit 1)
+	@echo ""
+	@echo "3️⃣  Checking proxy configuration..."
+	@[ -f .proxy-java-shim.env ] && \
+		echo "   ✅ Proxy configuration exists" || \
+		(echo "   ❌ .proxy-java-shim.env not found" && exit 1)
+	@echo ""
+	@echo "4️⃣  Testing proxy shim startup..."
+	@$(MAKE) proxy-shim-start && sleep 1 && $(MAKE) proxy-shim-stop
+	@echo ""
+	@echo "✅ Claude Code sandbox setup verified!"
+	@echo "   Ready to run: make claude-sandbox-tests"
+
+# Run tests in Claude sandbox (with proxy shim)
+.PHONY: claude-sandbox-tests
+claude-sandbox-tests:
+	@echo "🧪 Running tests in Claude Code sandbox..."
+	@echo "   (Starting proxy shim automatically)"
+	@echo ""
+	@$(MAKE) runtests-shim
+	@echo ""
+	@echo "✅ Tests completed in Claude Code sandbox!"
+
+# Run complete Claude sandbox workflow (verify + tests)
+.PHONY: claude-sandbox
+claude-sandbox:
+	@echo "🎯 Running complete Claude Code sandbox workflow..."
+	@echo ""
+	@$(MAKE) claude-sandbox-verify
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@$(MAKE) claude-sandbox-tests
+	@echo ""
+	@echo "🎉 All Claude Code sandbox checks passed!"
+
+# ========================================
+# Integration Notes
+# ========================================
+#
+# 1. Replace 'bin/kaocha --fail-fast' in runtests-shim with your test command
+# 2. Ensure .proxy-java-shim.env is in .gitignore
+# 3. Ensure script/proxy_shim.py has execute permissions: chmod +x script/proxy_shim.py
+# 4. Add to .gitignore:
+#      .proxy-shim.pid
+#      .proxy-java.env
+#      .proxy-java-shim.env
+#
+# ========================================
+# Usage Examples
+# ========================================
+#
+# First-time setup:
+#   make claude-code-web-setup
+#   cp .proxy-java-shim.env.template .proxy-java-shim.env
+#   cp settings.xml.template ~/.m2/settings.xml
+#
+# Verify setup:
+#   make claude-sandbox-verify
+#
+# Run tests:
+#   make claude-sandbox-tests
+#
+# Complete workflow:
+#   make claude-sandbox
+#
+# Manual proxy control:
+#   make proxy-shim-start
+#   # ... do work ...
+#   make proxy-shim-stop

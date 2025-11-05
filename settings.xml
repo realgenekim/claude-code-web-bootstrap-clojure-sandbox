@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven settings for Claude Code web environment
+  Save to: ~/.m2/settings.xml
+
+  This configures Maven to use the local proxy shim at 127.0.0.1:15080
+  which handles authentication to Claude Code's security proxy.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <proxies>
+    <!-- HTTP proxy configuration -->
+    <proxy>
+      <id>local-shim</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>127.0.0.1</host>
+      <port>15080</port>
+      <nonProxyHosts>localhost</nonProxyHosts>
+    </proxy>
+
+    <!-- HTTPS proxy configuration -->
+    <proxy>
+      <id>local-shim-https</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>127.0.0.1</host>
+      <port>15080</port>
+      <nonProxyHosts>localhost</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
