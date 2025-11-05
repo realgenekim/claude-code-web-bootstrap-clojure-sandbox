@@ -10,10 +10,10 @@ This guide ensures you can download all Maven/Gradle/Clojure dependencies succes
 
 ```bash
 # 1. Install Clojure
-make claude-code-install
+make install-clojure
 
 # 2. Run complete setup (this does everything!)
-make claude-sandbox
+make claude-sandbox-all
 
 # Result: All 97 tests passing, all dependencies downloaded ✅
 ```
