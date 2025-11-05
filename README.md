@@ -36,7 +36,7 @@ And putting this in a repo allows all my projects to benefit from it.  Hopefully
 - Comprehensive troubleshooting guide
 - Zero manual configuration
 
-**Success Rate:** 100% when following this guide
+**Success Rate:** High for projects without Google Cloud dependencies. See [Known Issues](#️-known-issues) for limitations with complex Google Cloud dependency trees.
 
 ---
 
@@ -211,7 +211,49 @@ curl -o ~/.m2/repository/com/google/cloud/google-cloud-bom/0.240.0/google-cloud-
 
 **Automation:** Add these curl commands to your project's setup Makefile or initialization script for repeatable setup.
 
-**Help wanted!** If you've found a better solution or automated this, please share! Open an issue or PR with details.
+### ⚠️ Deeper Issue: Parent POMs and Dependency Management
+
+**If manual BOM downloads don't fully solve your problem:**
+
+Some projects (especially those with deep Google Cloud dependencies) trigger **repeated DNS resolution failures** for parent POMs from both Maven Central and Clojars. The pattern:
+
+```
+java.net.UnknownHostException: repo1.maven.org: Temporary failure in name resolution
+java.net.UnknownHostException: repo.clojars.org: Temporary failure in name resolution
+```
+
+**Root cause:** Maven's HTTP client performs direct DNS lookups when:
+- Resolving parent POMs (specified with `<parent>` in pom.xml)
+- Processing dependency management imports (BOM POMs)
+- Following transitive dependency chains
+
+These lookups bypass the proxy configuration entirely, even with `JAVA_TOOL_OPTIONS` and `~/.m2/settings.xml` correctly configured.
+
+**Impact:** Projects with deep Google Cloud dependencies may require downloading dozens of parent/BOM POMs manually. This quickly becomes unsustainable.
+
+**Mitigation strategies:**
+
+1. **Pre-download dependency tree on local machine:**
+   ```bash
+   # Run on your local machine (not in sandbox)
+   mvn dependency:go-offline
+   # or for Clojure:
+   clj -P -X:dev:test
+
+   # Then copy ~/.m2/repository to sandbox
+   tar -czf m2-cache.tar.gz ~/.m2/repository
+   # Upload to sandbox and extract
+   ```
+
+2. **Create a pre-seeded Maven cache Docker image** (if using containers)
+
+3. **Test with simpler projects first** - Projects without Google Cloud dependencies typically work fine
+
+4. **Use vendored dependencies** - Copy JARs directly into your project (not ideal, but works)
+
+**Status:** This is a fundamental limitation of Maven's HTTP client DNS resolution in restricted sandbox environments. No complete workaround exists for projects with complex transitive dependencies.
+
+**Help wanted!** If you've found a way to force Maven to use proxy for ALL DNS lookups (including parent POM resolution), please share! This would be a game-changer.
 
 **Full error trace:** See the complete stack trace in [TROUBLESHOOTING.md](TROUBLESHOOTING.md#google-cloud-bom-issue).
 
