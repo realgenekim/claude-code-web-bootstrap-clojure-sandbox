@@ -42,13 +42,13 @@ And putting this in a repo allows all my projects to benefit from it.  Hopefully
 
 ### For Users (In Claude Code Chat)
 
-Ask Claude:
+Have in the beginning of your Claude Code Web prompt:
 ```
 Switch to server2 branch. 
 
 Clone this repo: https://github.com/realgenekim/claude-code-web-bootstrap-clojure-sandbox
 
-Your goal. Get Clojure installed and then in ./server2: make server
+Your goal. Get Clojure installed and then in ./server2: make server (insert what you want to do)
 ```
 
 Claude will:
@@ -59,7 +59,7 @@ Claude will:
 
 ### For Projects (Integration)
 
-Claude:  I recommend you clone this repo, and then in that directory, run `make install-clojure`
+Claude:  I recommend you clone this repo, and then in that directory, run `make install-clojure` and then `make claude-sandbox-all`
 
 
 ## 📁 Files in This Repo
