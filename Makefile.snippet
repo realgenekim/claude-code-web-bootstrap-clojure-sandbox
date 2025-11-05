@@ -14,6 +14,34 @@ export PATH := $(HOME)/bin:$(PATH)
 # ========================================
 # Claude Code Web Setup
 # ========================================
+.PHONY: install-clojure
+install-clojure:
+	@echo "Installing Clojure CLI tools..."
+	@if command -v clojure >/dev/null 2>&1; then \
+		echo "✓ Clojure is already installed:"; \
+		clojure --version; \
+	else \
+		echo "Downloading Clojure installer..."; \
+		curl -L -O https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh && \
+		chmod +x linux-install.sh && \
+		(sudo ./linux-install.sh 2>/dev/null || \
+			(echo ""; \
+			 echo "⚠️  System-wide installation requires sudo. Manual installation options:"; \
+			 echo ""; \
+			 echo "Option 1: Run with sudo manually:"; \
+			 echo "  sudo ./linux-install.sh"; \
+			 echo ""; \
+			 echo "Option 2: Install to user directory (~/.local):"; \
+			 echo "  mkdir -p ~/.local && ./linux-install.sh --prefix ~/.local"; \
+			 echo "  export PATH=~/.local/bin:\$$PATH"; \
+			 echo ""; \
+			 echo "Option 3: Use asdf version manager:"; \
+			 echo "  asdf plugin add clojure"; \
+			 echo "  asdf install clojure latest"; \
+			 echo "  asdf global clojure latest"; \
+			 echo "")) && \
+		(command -v clojure >/dev/null 2>&1 && rm linux-install.sh && clojure --version || true); \
+	fi
 
 # Setup Claude Code web environment (install Clojure + proxy config)
 .PHONY: claude-code-web-setup
