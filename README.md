@@ -61,28 +61,6 @@ Claude will:
 
 Claude:  I recommend you clone this repo, and then in that directory, run `make install-clojure`
 
-**Option 1: Copy files to your project**
-```bash
-# Copy the essential files
-cp docs/claude-code-web-repo/.proxy-java-shim.env .
-cp docs/claude-code-web-repo/settings.xml ~/.m2/
-cp docs/claude-code-web-repo/proxy_shim.py script/
-cp docs/claude-code-web-repo/Makefile.snippet Makefile  # Merge into your Makefile
-```
-
-**Option 2: Reference this repo**
-
-Add to your project's `README.md`:
-```markdown
-## 🌐 Claude Code Web Setup
-
-If using Claude Code on the web, see:
-https://github.com/realgenekim/claude-code-web-setup
-
-Quick start: Ask Claude "does 'make claude-sandbox' work?"
-```
-
----
 
 ## 📁 Files in This Repo
 
@@ -93,7 +71,7 @@ Quick start: Ask Claude "does 'make claude-sandbox' work?"
 | `.proxy-java-shim.env` | Java proxy configuration | Project root |
 | `settings.xml` | Maven proxy settings | `~/.m2/settings.xml` |
 | `proxy_shim.py` | Proxy authentication translator | `script/proxy_shim.py` |
-| `Makefile.snippet` | Make targets for automation | Merge into project Makefile |
+| `Makefile` | Make targets for automation | Merge into project Makefile |
 | `TROUBLESHOOTING.md` | Quick reference guide | Documentation |
 
 ---
