@@ -2,6 +2,8 @@
 
 **Like the protagonist in Memento**: You're Claude Code running in a web sandbox, trying to get Clojure build tools and dependencies downloaded, with no memory of how. This guide gets you through so you can do useful things with Clojure in your sandbox.
 
+**The Problem:** You want to run Clojure and download all your dependencies in Claude Code Web sandbox, so it can not just write code, but also run all your tests.  But you can't, and it's driving you bananas.  Here's how I got it running, 
+
 ---
 
 Background:  I remember spending about 4 hours trying to get Clojure running in the OpenAI Codex sandbox, setting up Maven Central proxies, and even having to vendor in several jar files from Clojars repositories.  Although I felt proud I got it running, it wasn't the least bit enjoyable.
@@ -14,7 +16,7 @@ But despite all the automation, Claude Code Web continued to struggle to get Clo
 
 And putting this in a repo allows all my projects to benefit from it.  Hopefully this will help you, too!
 
-(PS: Check out the Vibe Coding book that Steve Yegge and I wrote, that describes how to put all this amazing magic to good use!!!)
+(PS: Check out the new [Vibe Coding](https://www.amazon.com/Vibe-Coding-Building-Production-Grade-Software/dp/1966280025/ book that Steve Yegge and I wrote, which describes how to put all these amazing new magical technologies to good use!!!)
 
 ---
 
