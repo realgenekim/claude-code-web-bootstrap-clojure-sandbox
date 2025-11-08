@@ -245,11 +245,29 @@ These lookups bypass the proxy configuration entirely, even with `JAVA_TOOL_OPTI
    # Upload to sandbox and extract
    ```
 
-2. **Create a pre-seeded Maven cache Docker image** (if using containers)
+2. **Use Google Cloud Storage for Maven cache** (recommended for Google Cloud projects):
+   ```bash
+   # One-time setup: Upload your local Maven cache
+   tar -czf m2-cache.tar.gz ~/.m2/repository
+   gsutil cp m2-cache.tar.gz gs://your-bucket/clojure-deps/
 
-3. **Test with simpler projects first** - Projects without Google Cloud dependencies typically work fine
+   # In Claude Code sandbox: Download and extract
+   curl gs://your-bucket/clojure-deps/m2-cache.tar.gz .
+   tar -xzf m2-cache.tar.gz -C ~/
+   ```
 
-4. **Use vendored dependencies** - Copy JARs directly into your project (not ideal, but works)
+   **Why this works:**
+   - `gsutil` respects `HTTP_PROXY` environment variable
+   - One-time upload, reuse across all sessions
+   - Much faster than downloading from Maven Central
+   - Can share across team members
+   - Works for any dependency tree complexity
+
+3. **Create a pre-seeded Maven cache Docker image** (if using containers)
+
+4. **Test with simpler projects first** - Projects without Google Cloud dependencies typically work fine
+
+5. **Use vendored dependencies** - Copy JARs directly into your project (not ideal, but works)
 
 **Status:** This is a fundamental limitation of Maven's HTTP client DNS resolution in restricted sandbox environments. No complete workaround exists for projects with complex transitive dependencies.
 
